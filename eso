@@ -1,0 +1,228 @@
+package aed;
+
+import java.util.*;
+
+// Todos los tipos de datos "Comparables" tienen el método compareTo()
+// elem1.compareTo(elem2) devuelve un entero. Si es mayor a 0, entonces elem1 > elem2
+public class ABB<T extends Comparable<T>> implements Conjunto<T> {
+    Nodo raiz;
+    int cardinal;
+
+    private class Nodo {
+        T valor;
+        Nodo izq;
+        Nodo der;
+        Nodo padre;
+        Nodo(T v) {
+            valor = v;
+            }
+    }
+
+    public ABB() {
+        raiz=null;
+    }
+
+    public int cardinal() {
+        return this.cardinal;
+    }
+
+    public T minimo(){
+        if (raiz==null){
+            return null;
+        }
+        else{
+            Nodo actual = raiz;
+            while (actual.izq!=null){
+                actual = actual.izq;
+            }
+            return actual.valor;
+        }
+    }
+
+    public T maximo(){
+        if (raiz==null){
+            return null;
+        }
+        else{
+            Nodo actual = raiz;
+            while (actual.der!=null){
+                actual = actual.der;
+            }
+            return actual.valor;
+        }
+    }
+
+    public void insertar(T elem){
+        Nodo padre = raiz;
+        Nodo nuevo = new Nodo(elem);
+        if(padre!=null){
+            while ((elem.compareTo(padre.valor)!=0)){
+                if (elem.compareTo(padre.valor)>0){
+                    if(padre.der!=null){
+                        padre = padre.der;
+                    }
+                    else{
+                        padre.der=nuevo;
+                        cardinal++;
+                    }
+                }
+                if (elem.compareTo(padre.valor)<0){
+                    if(padre.izq!=null){
+                        padre = padre.izq;
+                    }
+                    else{
+                        padre.izq=nuevo;
+                        cardinal++;
+                    }
+                }
+            }
+        }
+        else{
+            this.raiz = nuevo;
+            cardinal++;
+        }
+    }
+
+    public boolean pertenece(T elem){
+        Nodo padre = raiz;
+        if(padre!=null){
+            while ((elem.compareTo(padre.valor)!=0)){
+                if (elem.compareTo(padre.valor)>0){
+                    if(padre.der!=null){
+                        padre = padre.der;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+                if (elem.compareTo(padre.valor)<0){
+                    if(padre.izq!=null){
+                        padre = padre.izq;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    public void eliminar(T elem){
+        if(pertenece(elem)){
+            cardinal--;
+            Nodo buscado = raiz;
+            if(elem!=raiz.valor){
+                while ((elem.compareTo(buscado.valor)!=0)){
+                    if (elem.compareTo(buscado.valor)>0){
+                        if(buscado.der!=null){
+                            buscado = buscado.der;
+                        }
+                    }
+                    if (elem.compareTo(buscado.valor)<0){
+                        if(buscado.izq!=null){
+                            buscado = buscado.izq;
+                        }
+                    }
+                }
+                if (buscado.izq == null && buscado.der == null){
+                    buscado.valor = null;
+                }
+                else if (buscado.izq == null && buscado.der != null){
+                    if(buscado.der.izq==null){
+                        buscado.valor = buscado.der.valor;
+                    }
+                    else{
+                        buscado.valor = buscado.der.izq.valor;
+                    }
+                }
+                else if (buscado.izq != null & buscado.der == null){
+                    if(buscado.izq.der==null){
+                        buscado.valor = buscado.der.valor;
+                    }
+                    else{
+                        buscado.valor = buscado.izq.der.valor;
+                    }
+                    }
+                else{
+                    if(buscado.der !=null){
+                        buscado.valor = buscado.izq.valor;
+                    }
+                }
+            }
+            else{            
+                if (buscado.izq == null && buscado.der == null){
+                    buscado.valor = null;
+                }
+                else if (buscado.izq == null && buscado.der != null){
+                    if(buscado.der.izq==null){
+                        buscado.valor = buscado.der.valor;
+                    }
+                    else{
+                        buscado.valor = buscado.der.izq.valor;
+                    }
+                }
+                else if (buscado.izq != null & buscado.der == null){
+                    if(buscado.izq.der==null){
+                        buscado.valor = buscado.der.valor;
+                    }
+                    else{
+                        buscado.valor = buscado.izq.der.valor;
+                    }
+                    }
+                else{
+                    if(buscado.der !=null){
+                        buscado.valor = buscado.izq.valor;
+                    }
+                }
+                }
+        }
+    }
+
+    public String toString(){
+        throw new UnsupportedOperationException("No implementada aun");
+    }
+
+    private class ABB_Iterador implements Iterador<T> {
+        private Nodo _actual;
+        private Nodo _prev;
+
+        public ABB_Iterador(){
+            this._prev = null; 
+            this._actual = raiz;
+        }
+
+        public boolean haySiguiente() {            
+            return this._actual != null;
+        }
+    
+        public T siguiente() {
+            if (_actual.izq != null && _prev != raiz){
+                while(_actual.izq!=null){
+                    _actual = _actual.izq;
+                    _prev = raiz;
+                }
+            }
+            else if (_actual.der != null){
+                _actual = _actual.der;
+                _prev = _actual.der;
+                while(_actual.izq!=null){
+                    _actual = _actual.izq;
+
+                }
+            }
+            else {
+                _actual = _prev;
+            }
+                return _actual.valor;
+        }
+    }
+
+    public Iterador<T> iterador() {
+        return new ABB_Iterador();
+    }
+
+}
