@@ -1,3 +1,4 @@
+
 package aed;
 
 import java.util.*;
@@ -52,35 +53,55 @@ public class ABB<T extends Comparable<T>> implements Conjunto<T> {
         }
     }
 
+    public Nodo hallarNodoSiguiente(Nodo arbol) {
+        if (arbol == null) return null;
+        if (arbol.der != null) return hallarNodoConMinimo(arbol.der);
+        return hallarSiguienteNodoPadre(arbol);
+    }
+
+    private Nodo hallarSiguienteNodoPadre(Nodo arbol) {
+        Nodo nodoPadre = arbol.padre;
+        if (arbol == null || nodoPadre == null || arbol == nodoPadre.izq) return nodoPadre;
+        return hallarSiguienteNodoPadre(nodoPadre);
+    }
+
+    public Nodo hallarNodoConMinimo(Nodo arbol){
+        if(arbol.izq == null) return arbol; 
+        else return hallarNodoConMinimo(arbol.izq);
+    } 
+
     public void insertar(T elem){
-        Nodo padre = raiz;
-        Nodo nuevo = new Nodo(elem);
-        if(padre!=null){
-            while ((elem.compareTo(padre.valor)!=0)){
-                if (elem.compareTo(padre.valor)>0){
-                    if(padre.der!=null){
-                        padre = padre.der;
-                    }
-                    else{
-                        padre.der=nuevo;
-                        cardinal++;
-                    }
-                }
-                if (elem.compareTo(padre.valor)<0){
-                    if(padre.izq!=null){
-                        padre = padre.izq;
-                    }
-                    else{
-                        padre.izq=nuevo;
-                        cardinal++;
-                    }
-                }
-            }
+        Nodo nodo = this.raiz;
+        Nodo nuevoNodo = new Nodo(elem);
+        if(this.pertenece(elem)) return; 
+        
+        if(nodo == null){
+            this.raiz = nuevoNodo; 
+            this.cardinal += 1;
+            return; 
         }
-        else{
-            this.raiz = nuevo;
-            cardinal++;
+    
+        this.insertarRecursivo(nuevoNodo, nodo);
+    
+    }
+
+    public void insertarRecursivo(Nodo nuevoNodo, Nodo arbol){
+        if(arbol == null) return; 
+        if(nuevoNodo.valor.compareTo(arbol.valor) > 0){
+            if(arbol.der == null) arbol.der = insertarNodo(nuevoNodo, arbol, arbol.der);
+            else insertarRecursivo(nuevoNodo, arbol.der);
+        }else{
+            if(arbol.izq == null) arbol.izq = insertarNodo(nuevoNodo, arbol, arbol.izq);
+            else insertarRecursivo(nuevoNodo, arbol.izq);
         }
+
+    }
+
+    public Nodo insertarNodo(Nodo nuevoNodo, Nodo arbol, Nodo arbolLado){
+        arbolLado = nuevoNodo;
+        nuevoNodo.padre = arbol;
+        this.cardinal += 1;
+        return nuevoNodo;
     }
 
     public boolean pertenece(T elem){
@@ -112,78 +133,84 @@ public class ABB<T extends Comparable<T>> implements Conjunto<T> {
     }
 
     public void eliminar(T elem){
-        if(pertenece(elem)){
-            cardinal--;
-            Nodo buscado = raiz;
-            if(elem!=raiz.valor){
-                while ((elem.compareTo(buscado.valor)!=0)){
-                    if (elem.compareTo(buscado.valor)>0){
-                        if(buscado.der!=null){
-                            buscado = buscado.der;
-                        }
-                    }
-                    if (elem.compareTo(buscado.valor)<0){
-                        if(buscado.izq!=null){
-                            buscado = buscado.izq;
-                        }
-                    }
-                }
-                if (buscado.izq == null && buscado.der == null){
-                    buscado.valor = null;
-                }
-                else if (buscado.izq == null && buscado.der != null){
-                    if(buscado.der.izq==null){
-                        buscado.valor = buscado.der.valor;
-                    }
-                    else{
-                        buscado.valor = buscado.der.izq.valor;
-                    }
-                }
-                else if (buscado.izq != null & buscado.der == null){
-                    if(buscado.izq.der==null){
-                        buscado.valor = buscado.der.valor;
-                    }
-                    else{
-                        buscado.valor = buscado.izq.der.valor;
-                    }
-                    }
-                else{
-                    if(buscado.der !=null){
-                        buscado.valor = buscado.izq.valor;
-                    }
-                }
-            }
-            else{            
-                if (buscado.izq == null && buscado.der == null){
-                    buscado.valor = null;
-                }
-                else if (buscado.izq == null && buscado.der != null){
-                    if(buscado.der.izq==null){
-                        buscado.valor = buscado.der.valor;
-                    }
-                    else{
-                        buscado.valor = buscado.der.izq.valor;
-                    }
-                }
-                else if (buscado.izq != null & buscado.der == null){
-                    if(buscado.izq.der==null){
-                        buscado.valor = buscado.der.valor;
-                    }
-                    else{
-                        buscado.valor = buscado.izq.der.valor;
-                    }
-                    }
-                else{
-                    if(buscado.der !=null){
-                        buscado.valor = buscado.izq.valor;
-                    }
-                }
-                }
+        Nodo nodo = this.raiz;
+        Nodo padre = null;
+        //Si es la raiz y no tiene hijos. 
+        if (elem.compareTo(nodo.valor) == 0 && nodo.der == null && nodo.izq == null) {
+            this.raiz = null;
+            this.cardinal -= 1;
+            return;
         }
+
+        eliminarRecursivo(elem, padre, nodo);
+    }
+
+    public void eliminarRecursivo(T elem, Nodo padre, Nodo arbol){
+        if(arbol == null) return; 
+        if(elem.compareTo(arbol.valor) > 0) eliminarRecursivo(elem, arbol, arbol.der);
+        else if(elem.compareTo(arbol.valor)<0) eliminarRecursivo(elem, arbol, arbol.izq);
+        else {
+            if(arbol.der == null || arbol.izq == null){
+                //Guardo alguno de los hijos del nodo.
+                Nodo hijo = arbol.izq != null ? arbol.izq : arbol.der;
+
+                //Si tiene un hijo siendo raiz.
+                if (padre == null) {
+                    this.raiz = hijo; // El nodo a eliminar es la raíz. Por lo tanto el unico hijo que tiene pasa a ser raiz.
+                } else if (padre.izq == arbol) { //Si el nodo a eliminar no es la raiz, entonces solo hago el swap
+                    padre.izq = hijo;
+                } else {
+                    padre.der = hijo;
+                }
+                this.cardinal--;
+            }else{
+                Nodo nodoAct = arbol;
+                Nodo predecesorInmediato = nodoAct.izq;
+
+                //Busco el predecesor inmediato (el mas grande de los chiquitos)
+                while(predecesorInmediato.der != null){
+                    nodoAct = predecesorInmediato;
+                    predecesorInmediato = predecesorInmediato.der;
+                }
+
+                //nodoAct al final es el anterior al ultimo mas grande de los chiquitos.
+                arbol.valor = predecesorInmediato.valor;
+                
+                if(nodoAct != arbol){
+                    nodoAct.der = predecesorInmediato.izq; 
+                }else{
+                    nodoAct.izq = predecesorInmediato.izq;
+                }
+            
+                this.cardinal--;
+            }
+        }
+        return; 
+        
+
     }
 
     public String toString(){
-        throw new UnsupportedOperationException("No implementada aun");
+        String res = "{";
+        if (this.raiz !=null){
+            Iterador<T> iterador = new ABB_Iterador();
+            if (this.raiz.der!= null || this.raiz.izq != null){
+                while(iterador.haySiguiente()){
+                    res += iterador.siguiente();
+                    if(iterador.haySiguiente()){
+                        res+= ",";
+                    }
+                }
+            }
+            else{
+                res+=raiz.valor;
+            }
+        }
+        else if (this.raiz!=null){
+            res += raiz.valor;
+        }
+        res += "}";
+        return res;
     }
 
     private class ABB_Iterador implements Iterador<T> {
@@ -192,34 +219,22 @@ public class ABB<T extends Comparable<T>> implements Conjunto<T> {
 
         public ABB_Iterador(){
             this._prev = null; 
-            this._actual = raiz;
+            this._actual = hallarNodoConMinimo(raiz);
         }
 
         public boolean haySiguiente() {            
-            return this._actual != null;
+            return this._actual != null; 
         }
     
         public T siguiente() {
-            if (_actual.izq != null && _prev != raiz){
-                while(_actual.izq!=null){
-                    _actual = _actual.izq;
-                    _prev = raiz;
-                }
-            }
-            else if (_actual.der != null){
-                _actual = _actual.der;
-                _prev = _actual.der;
-                while(_actual.izq!=null){
-                    _actual = _actual.izq;
-
-                }
-            }
-            else {
-                _actual = _prev;
-            }
-                return _actual.valor;
+            Nodo actualViejo = this._actual;
+            this._prev = actualViejo;
+            Nodo siguiente = hallarNodoSiguiente(this._actual);
+            this._actual = siguiente;
+            return actualViejo.valor;
         }
     }
+
 
     public Iterador<T> iterador() {
         return new ABB_Iterador();
